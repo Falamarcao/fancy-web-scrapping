@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: ./movie_listing
+      dockerfile: Dockerfile.prod
+    command: gunicorn movie_listing.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static_volume:/home/movie_listing/web/staticfiles
+      - media_volume:/home/movie_listing/web/mediafiles
+    expose:
+      - 8000
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - selenium
+      - db
+  selenium:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - 4444:4444
+      - 5900:5900
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env.prod.db
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/home/movie_listing/web/staticfiles
+      - media_volume:/home/movie_listing/web/mediafiles
+    ports:
+      - 1337:80
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

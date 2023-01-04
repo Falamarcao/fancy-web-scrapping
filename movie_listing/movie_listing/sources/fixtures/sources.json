@@ -1,0 +1,10 @@
+[
+  {
+    "model": "sources.source",
+    "pk": 1,
+    "fields": {
+      "name": "ingresso.com",
+      "url": "https://www.ingresso.com/"
+    }
+  }
+]

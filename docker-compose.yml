@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./movie_listing
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./movie_listing/:/usr/src/movie_listing/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - selenium
+      - db
+  selenium:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - 4444:4444
+      - 5900:5900
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=movie_listing
+      - POSTGRES_PASSWORD=movie_listing
+      - POSTGRES_DB=movie_listing_dev
+
+volumes:
+  postgres_data:
