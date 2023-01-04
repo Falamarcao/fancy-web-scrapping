@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Wait for Postgres to start running
 if [ "$DATABASE" = "postgres" ]
 then
     echo "Waiting for postgres..."
@@ -8,16 +9,8 @@ then
       sleep 0.1
     done
 
-    echo "PostgreSQL started"
+    >&2 echo "PostgreSQL started"
 fi
-
-echo "Waiting for selenium..."
-
-while ! nc -z selenium 4444; do
-  sleep 0.1
-done
-
-echo "Selenium started"
 
 CONTAINER_ALREADY_STARTED="CONTAINER_ALREADY_STARTED_PLACEHOLDER"
 if [ ! -e $CONTAINER_ALREADY_STARTED ]; then

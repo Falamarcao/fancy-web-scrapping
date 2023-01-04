@@ -8,6 +8,7 @@
 * Nginx (prod)
 * Gunicorn (prod)
 * PostgreSQL or possibly others SQL Databases
+* Selenium Grid
 * Python
 * Packages:
   * **Django**
@@ -17,6 +18,10 @@
 ## Installing
 
 > Do you have [Docker Installed](https://www.docker.com/)?
+
+## Selenium Grid
+
+(Optional) To see what is happening inside the container, head to <http://localhost:4444/?autoconnect=1&resize=scale&password=secret>.
 
 ## NOTES About Both Enviroments - PROD & DEV
 

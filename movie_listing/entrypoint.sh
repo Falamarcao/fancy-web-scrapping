@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Wait for Postgres to start running
 if [ "$DATABASE" = "postgres" ]
 then
     echo "Waiting for postgres..."
@@ -10,15 +11,6 @@ then
 
     echo "PostgreSQL started"
 fi
-
-echo "Waiting for selenium..."
-
-while ! nc -z selenium 4444; do
-  sleep 0.1
-done
-
-echo "Selenium started"
-
 
 python manage.py flush --no-input
 python manage.py makemigrations
