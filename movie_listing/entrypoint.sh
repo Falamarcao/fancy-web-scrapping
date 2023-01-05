@@ -12,22 +12,27 @@ then
     echo "PostgreSQL started"
 fi
 
-python manage.py flush --no-input
-python manage.py makemigrations
-python manage.py migrate --noinput
+if [ "$SERVICE_NAME" = "django" ]
+then
+    echo "DJANGO OPERATIONS STARTED"
+    python manage.py flush --no-input
+    python manage.py makemigrations
+    python manage.py migrate --noinput
 
-# CREATE GROUPS
-# python manage.py create_groups
+    # CREATE GROUPS
+    # python manage.py create_groups
 
-# ADD DATA - fixtures
-python manage.py loaddata sources.json
+    # ADD DATA - fixtures
+    python manage.py loaddata sources.json
 
-# RUN TESTS EVERYTIME
-# python manage.py test movie_listing.sources movie_listing.movies &> test.log
+    # RUN TESTS EVERYTIME
+    # python manage.py test movie_listing.sources movie_listing.movies &> test.log
 
-# CREATE SUPER USER
-echo "Creating Super User..."
-python manage.py createsuperuser --noinput --username $DJANGO_SUPERUSER_USERNAME --email $DJANGO_SUPERUSER_EMAIL
+    # CREATE SUPER USER
+    echo "Creating Super User..."
+    # python manage.py createsuperuser --noinput --username $DJANGO_SUPERUSER_USERNAME --email $DJANGO_SUPERUSER_EMAIL
+fi
+
 
 history -c
 

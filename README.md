@@ -23,6 +23,8 @@
 
 (Optional) To see what is happening inside the container, head to <http://localhost:4444/?autoconnect=1&resize=scale&password=secret>.
 
+## Celery Flower <http://localhost:5555/>
+
 ## NOTES About Both Enviroments - PROD & DEV
 
 When web container start, on the first time, the follow commands are executed automatically:

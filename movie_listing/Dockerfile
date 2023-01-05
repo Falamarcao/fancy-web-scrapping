@@ -17,6 +17,9 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+# Enable hot reload on dev enviroment - Celery tasks
+RUN pip install watchdog==2.2.1
+
 # copy entrypoint.sh
 COPY ./entrypoint.sh .
 RUN sed -i 's/\r$//g' /usr/src/movie_listing/entrypoint.sh

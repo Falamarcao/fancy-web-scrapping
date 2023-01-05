@@ -17,24 +17,37 @@ if [ ! -e $CONTAINER_ALREADY_STARTED ]; then
     touch $CONTAINER_ALREADY_STARTED
     echo "-- First container startup --"
     # YOUR_JUST_ONCE_LOGIC_HERE
-    python manage.py flush --no-input
-    python manage.py makemigrations
-    python manage.py migrate --noinput
-    python manage.py collectstatic
+    
+    if [ "$SERVICE_NAME" = "django" ]
+    then
+        python manage.py flush --no-input
+        python manage.py makemigrations
+        python manage.py migrate --noinput
+        python manage.py collectstatic    # ONLY ON PRODUCTION
 
-    # CREATE GROUPS
-    # python manage.py create_groups
+        # CREATE GROUPS
+        # python manage.py create_groups
 
-    # ADD DATA - fixtures
-    python manage.py loaddata sources.json
+        # ADD DATA - fixtures
+        python manage.py loaddata sources.json
 
-    # CREATE SUPER USER
-    # Look at .env.prod file to setup username and password
-    echo "Creating Super User - remember to change the .env.prod file"
-    python manage.py createsuperuser --noinput --username $DJANGO_SUPERUSER_USERNAME --email $DJANGO_SUPERUSER_EMAIL
+        # CREATE SUPER USER
+        # Look at .env.prod file to setup username and password
+        echo "Creating Super User - remember to change the .env.prod file"
+        python manage.py createsuperuser --noinput --username $DJANGO_SUPERUSER_USERNAME --email $DJANGO_SUPERUSER_EMAIL
+    fi
+
 else
     echo "-- Not first container startup --"
 fi
+
+
+# CELERY WORKER
+until cd /movie_listing/movie_listing
+do
+    echo "Waiting for server volume..."
+done
+
 
 history -c
 

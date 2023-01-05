@@ -8,11 +8,43 @@ services:
       - ./movie_listing/:/usr/src/movie_listing/
     ports:
       - 8000:8000
+    environment:
+      - SERVICE_NAME=django
     env_file:
       - ./.env.dev
     depends_on:
-      - selenium-hub
+      - redis
       - db
+      - selenium-hub
+  celery:
+    build: ./movie_listing
+    command: watchmedo auto-restart --directory=./ --pattern="*.py" --recursive -- celery -A movie_listing worker --loglevel=info --concurrency 10 -E --uid=nobody --gid=nogroup
+    volumes:
+      - ./movie_listing/:/usr/src/movie_listing/
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - django
+      - redis
+  dashboard:
+    build: ./movie_listing
+    command: celery flower -A movie_listing --port=5555 --broker=redis://redis:6379/0
+    ports:
+      - 5555:5555
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - django
+      - redis
+      - celery
+  redis:
+    image: redis:7-alpine 
+    expose:
+        - 6379
+    deploy:
+      resources:
+        limits:
+          memory: 512M
   chrome:
     image: selenium/node-chrome:4.7.2-20221219
     shm_size: 2gb
@@ -22,6 +54,7 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=10
   # chrome_video:
   #   image: selenium/video:ffmpeg-4.3.1-20221219
   #   volumes:
@@ -46,6 +79,8 @@ services:
       - POSTGRES_USER=movie_listing
       - POSTGRES_PASSWORD=movie_listing
       - POSTGRES_DB=movie_listing_dev
+    expose:
+      - 5432
 
 volumes:
   postgres_data:
