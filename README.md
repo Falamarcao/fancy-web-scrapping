@@ -42,10 +42,10 @@ They are included on entrypoints scripts: [entrypoint.sh](movie_listing/entrypoi
 But if wanted on your own risk it's possible to execute using:
 
 ```commandline
-docker-compose -f docker-compose.prod.yml exec web python manage.py flush --noinput
-docker-compose -f docker-compose.prod.yml exec web python manage.py makemigrations
-docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --noinput
-docker-compose -f docker-compose.prod.yml exec web python manage.py loaddata customers.json staff.json sources.json movies.json
+docker-compose -f docker-compose.prod.yml exec django python manage.py flush --noinput
+docker-compose -f docker-compose.prod.yml exec django python manage.py makemigrations
+docker-compose -f docker-compose.prod.yml exec django python manage.py migrate --noinput
+docker-compose -f docker-compose.prod.yml exec django python manage.py loaddata customers.json staff.json sources.json movies.json
 ```
 
 **INFO: we are not putting migrations on version control because this is a fresh start project.**
@@ -123,13 +123,13 @@ to run on demand see the commands bellow:
 * ### DEV
   
   ````commandline
-  docker-compose exec web python manage.py test movie_listing.sources movie_listing.movies
+  docker-compose exec django python manage.py test movie_listing.sources movie_listing.movies
   ````
 
 * ### PROD
   
   ````commandline
-  docker-compose -f docker-compose.prod.yml exec web python manage.py test movie_listing.sources movie_listing.movies
+  docker-compose -f docker-compose.prod.yml exec django python manage.py test movie_listing.sources movie_listing.movies
   ````
 
 ## Help: If you have any problem please e-mail me or contact me on LinkedIn.
