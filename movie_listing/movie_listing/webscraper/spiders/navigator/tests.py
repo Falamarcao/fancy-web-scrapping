@@ -107,6 +107,46 @@ class NavigationTestCase(unittest.TestCase):
 
         print("OK -> test_navigation_guide_method_by")
 
+    def test_subcommands(self):
+        ng = NavigationGuide()
+
+        ng.append({
+            'human_label': 'Place',
+            'actions': ['create_entry'],
+            'subcommands': [
+                {'human_label': 'name',
+                 'XPATH': r'//div[contains(@class, "card-theater-text")]//strong'},
+                {'human_label': 'name',
+                 'XPATH': r'//div[contains(@class, "card-theater-text")]//strong'}
+            ]
+        })
+
+        self.assertIsInstance(ng[0].subcommands[0], NavigationCommand)
+        self.assertIsInstance(ng[0].subcommands[1], NavigationCommand)
+        self.assertEqual(ng[0].subcommands[0], ng[0].subcommands[1])
+        self.assertEqual(ng[0].subcommands[0].path, ng[0].subcommands[1].path)
+
+        print("OK -> test_subcommands")
+
+    def test_subcommand_method_by(self):
+        ng = NavigationGuide()
+
+        ng.append({
+            'human_label': 'Place',
+            'actions': ['create_entry'],
+            'subcommands': [
+                {'human_label': 'name',
+                 'XPATH': r'//div[contains(@class, "card-theater-text")]//strong'},
+                {'human_label': 'name',
+                 'CSS_SELECTOR': r'menu-bar'}
+            ]
+        })
+
+        self.assertEqual(ng[0].subcommands[0].by, By.XPATH)
+
+        self.assertEqual(ng[0].subcommands[1].by, By.CSS_SELECTOR)
+
+        print("OK -> test_subcommand_method_by")
 
 if __name__ == '__main__':
     unittest.main()

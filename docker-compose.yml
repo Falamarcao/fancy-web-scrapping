@@ -18,7 +18,7 @@ services:
       - selenium-hub
   celery:
     build: ./movie_listing
-    command: watchmedo auto-restart --directory=./ --pattern="*.py" --recursive -- celery -A movie_listing worker --loglevel=info --concurrency 10 -E --uid=nobody --gid=nogroup
+    command: watchmedo auto-restart -d . -p "*.py" -- celery -A movie_listing worker --loglevel=info --concurrency 1 -E --uid=nobody --gid=nogroup
     volumes:
       - ./movie_listing/:/usr/src/movie_listing/
     env_file:
@@ -54,7 +54,7 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=10
+      - SE_NODE_MAX_SESSIONS=1
   # chrome_video:
   #   image: selenium/video:ffmpeg-4.3.1-20221219
   #   volumes:
