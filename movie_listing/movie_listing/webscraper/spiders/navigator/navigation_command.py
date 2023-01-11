@@ -14,8 +14,8 @@ class NavigationCommand:
                 else:
                     setattr(self, key, kwargs[key])
 
-        self.__attrname = next(filter(lambda x: x not in (
-            'human_label', 'actions'), list(self.__dict__.keys())))
+        self.__attrname = next(filter(lambda x: x.isupper(),
+                                      list(self.__dict__.keys())), None)
 
     def __getattribute__(self, __name: str) -> Any:
         try:

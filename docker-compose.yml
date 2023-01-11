@@ -18,7 +18,7 @@ services:
       - selenium-hub
   celery:
     build: ./movie_listing
-    command: watchmedo auto-restart -d . -p "*.py" -- celery -A movie_listing worker --loglevel=info --concurrency 1 -E --uid=nobody --gid=nogroup
+    command: celery -A movie_listing worker --loglevel=info --concurrency 1 -E --uid=nobody --gid=nogroup
     volumes:
       - ./movie_listing/:/usr/src/movie_listing/
     env_file:
@@ -47,7 +47,7 @@ services:
           memory: 512M
   chrome:
     image: selenium/node-chrome:4.7.2-20221219
-    shm_size: 2gb
+    shm_size: 4gb
     depends_on:
       - selenium-hub
     environment:

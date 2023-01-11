@@ -50,7 +50,7 @@ services:
           memory: 512M
   chrome:
     image: selenium/node-chrome:4.7.2-20221219
-    shm_size: 2gb
+    shm_size: 4gb
     depends_on:
       - selenium-hub
     environment:

@@ -148,5 +148,6 @@ class NavigationTestCase(unittest.TestCase):
 
         print("OK -> test_subcommand_method_by")
 
+
 if __name__ == '__main__':
     unittest.main()

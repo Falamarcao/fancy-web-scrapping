@@ -45,7 +45,7 @@ class ChromeDriver:
             options=chrome_options)
         self.human = Humanizer(driver=self.driver)
         self.actions: ActionChains = ActionChains(self.driver)
-        self.data: dict = {}
+        self.data: list[dict] = []
 
     def __on_error(self, method) -> None:
         try:
@@ -55,14 +55,15 @@ class ChromeDriver:
                   traceback.format_exc(), "-"*10, "\n\n")
 
     @staticmethod
-    def wait(start: int = 3, stop: int = 6) -> int:
+    def wait(start: int = 2, stop: int = 4) -> int:
         return randrange(start, stop, 1)
 
-    def find_element_by(self, by, path, many: bool = False) -> Union[list[WebElement], WebElement]:
+    def find_element_by(self, by, path, many: bool) -> Union[list[WebElement], WebElement]:
         try:
             # 1. Wait for element presence
+            print(f"by {by} and path {path}", "\n\n")
             WebDriverWait(self.driver, self.wait()).until(
-                EC.presence_of_element_located((by, path)))  # FIXME: Unable to determine element locating strategy
+                EC.presence_of_element_located((by, path)))
 
             # 2. Find element(s) by...
             if many:
@@ -73,18 +74,27 @@ class ChromeDriver:
 
     def actions_chain(self, navigation_command: NavigationCommand, elements: Union[list[WebElement], WebElement]):
         for action in navigation_command.actions:
-            print(action, '%'*30)
-            if action == 'create_entry':
+            if action == '':
+                continue
 
-                for _ in self.data:
-                    for element in elements:
-                        self.data.update(
+            print(action, "\n")
+
+            if action == 'create_entry':
+                elements_length = len(elements)
+                for idx, element in enumerate(elements):
+                    if len(self.data) < elements_length:
+                        self.data.append(
+                            {navigation_command.human_label: element.text})
+                    else:
+                        self.data[idx].update(
                             {navigation_command.human_label: element.text})
 
             elif action == 'perform_create_entry':
                 current_app.send_task(
-                    'movie_listing.webscraper.tasks.create_entry',
-                    model_name=navigation_command.model_name, data=self.data)
+                    name='movie_listing.webscraper.tasks.create_entry')(
+                    model_name=navigation_command.model_name, data=self.data)  # FIXME: Continue from here.
+
+                self.data = []
 
             elif action == 'move_to_element_with_offset':
                 self.actions.move_by_offset(8, 0)
@@ -116,18 +126,22 @@ class ChromeDriver:
             self.actions.pause(self.wait())
 
             for navigation_command in self.navigation_guide:
+                print("NAVIGATION COMMAND")
+
+                if navigation_command.path:
+                    element_s = self.find_element_by(navigation_command.by,
+                                                     navigation_command.path,
+                                                     many=navigation_command.many)
+
+                    self.actions_chain(navigation_command, element_s)
 
                 if navigation_command.subcommands:
                     for subcommand in navigation_command.subcommands:
-                        element = self.find_element_by(
+                        print("NAVIGATION SUBCOMMAND")
+                        element_s = self.find_element_by(
                             subcommand.by, subcommand.path, many=subcommand.many)
 
-                    self.actions_chain(subcommand, element)
-                else:
-                    elements = self.find_element_by(navigation_command.by,
-                                                    navigation_command.path)
-
-                    self.actions_chain(navigation_command, elements)
+                        self.actions_chain(subcommand, element_s)
 
         self.__on_error(_)
 
