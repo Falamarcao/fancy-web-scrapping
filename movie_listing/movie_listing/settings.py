@@ -91,14 +91,20 @@ DATABASES = {
     }
 }
 
+# Celery Configuration Options
+CELERY_TIMEZONE = os.environ.get("CELERY_TIMEZONE")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND")
+
 # Cache
 # https://docs.djangoproject.com/en/4.0/topics/cache/
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',  # TODO: Modify Cache on production-ready environment
-#     }
-# }
+CACHES = {
+    'default': {
+        'BACKEND': os.environ.get('DJANGO_CACHE_BACKEND'),
+        'LOCATION': os.environ.get('DJANGO_CACHE_LOCATION')
+    }
+}
 
 AUTH_USER_MODEL = 'users.User'
 

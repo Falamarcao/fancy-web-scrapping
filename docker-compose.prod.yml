@@ -1,41 +1,96 @@
 version: '3.8'
 
 services:
-  web:
+  django:
     build:
       context: ./movie_listing
       dockerfile: Dockerfile.prod
     command: gunicorn movie_listing.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - static_volume:/home/movie_listing/web/staticfiles
-      - media_volume:/home/movie_listing/web/mediafiles
+      - static_volume:/home/movie_listing/django/staticfiles
+      - media_volume:/home/movie_listing/django/mediafiles
     expose:
       - 8000
+    environment:
+      - SERVICE_NAME=django
     env_file:
       - ./.env.prod
     depends_on:
-      - selenium
+      - redis
       - db
-  selenium:
-    image: selenium/standalone-chrome:latest
+      - selenium-hub
+  celery:
+    build: ./movie_listing
+    command: celery -A movie_listing worker --loglevel=info --concurrency 10 -E --uid=nobody --gid=nogroup
+    volumes:
+      - ./movie_listing/:/usr/src/movie_listing/
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - django
+      - redis
+  dashboard:
+    build: ./movie_listing
+    command: celery flower -A movie_listing --port=5555 --broker=redis://redis:6379/0
     ports:
+      - 5555:5555
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - django
+      - redis
+      - celery
+  redis:
+    image: redis:7-alpine 
+    expose:
+        - 6379
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+  chrome:
+    image: selenium/node-chrome:4.7.2-20221219
+    shm_size: 4gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=10
+  # chrome_video:
+  #   image: selenium/video:ffmpeg-4.3.1-20221219
+  #   volumes:
+  #     - /tmp/videos:/videos
+  #   depends_on:
+  #     - chrome
+  #   environment:
+  #     - DISPLAY_CONTAINER_NAME=chrome
+  #     - FILE_NAME=chrome_video.mp4
+  selenium-hub:
+    image: selenium/hub:4.7.2-20221219
+    container_name: selenium-hub
+    ports:
+      - 4442:4442
+      - 4443:4443
       - 4444:4444
-      - 5900:5900
   db:
     image: postgres:13.0-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.prod.db
+    expose:
+      - 5432
   nginx:
     build: ./nginx
     volumes:
-      - static_volume:/home/movie_listing/web/staticfiles
-      - media_volume:/home/movie_listing/web/mediafiles
+      - static_volume:/home/movie_listing/django/staticfiles
+      - media_volume:/home/movie_listing/django/mediafiles
     ports:
       - 1337:80
     depends_on:
-      - web
+      - django
 
 volumes:
   postgres_data:
