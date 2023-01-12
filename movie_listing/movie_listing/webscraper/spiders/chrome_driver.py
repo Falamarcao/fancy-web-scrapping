@@ -55,6 +55,16 @@ class ChromeDriver:
                   traceback.format_exc(), "-"*10, "\n\n")
 
     @staticmethod
+    def batch(iterable):
+        """
+        Splits an iterable into multiple batches.    
+        """
+        l = len(iterable)
+        n = round(l/2)
+        for ndx in range(0, l, n):
+            yield iterable[ndx:min(ndx + n, l)]
+
+    @staticmethod
     def wait(start: int = 2, stop: int = 4) -> int:
         return randrange(start, stop, 1)
 
@@ -77,23 +87,36 @@ class ChromeDriver:
             if action == '':
                 continue
 
-            print(action, "\n")
+            print(navigation_command.human_label, action, "\n")
 
             if action == 'create_entry':
                 elements_length = len(elements)
                 for idx, element in enumerate(elements):
+
+                    if navigation_command.get_attribute:
+                        value = element.get_attribute(
+                            navigation_command.get_attribute)
+                    else:
+                        value = element.text
+
                     if len(self.data) < elements_length:
                         self.data.append(
-                            {navigation_command.human_label: element.text})
+                            {navigation_command.human_label: value})
                     else:
                         self.data[idx].update(
-                            {navigation_command.human_label: element.text})
+                            {navigation_command.human_label: value})
 
             elif action == 'perform_create_entry':
-                current_app.send_task(
-                    name='movie_listing.webscraper.tasks.create_entry')(
-                    model_name=navigation_command.model_name, data=self.data)  # FIXME: Continue from here.
 
+                # Create tasks in small batches
+                for items in self.batch(self.data):
+                    current_app.send_task(
+                        name='movie_listing.webscraper.tasks.create_entry',
+                        kwargs={'model_name': navigation_command.model_name,
+                                'data': items}
+                    )
+
+                # Clean data in memory to allow other actions collect more data
                 self.data = []
 
             elif action == 'move_to_element_with_offset':
@@ -110,9 +133,15 @@ class ChromeDriver:
             elif action == 'scroll_page':
                 Humanizer.scroll_page(elements)
 
+            elif action == 'back':
+                self.driver.execute_script("window.history.go(-1)")
+
             elif action == 'perform_actions':
                 # 4. Perform actions from the ActionChain
                 self.actions.perform()
+
+            elif action == 'debug_print_data':
+                print(self.data)
 
             else:
                 getattr(self.actions, action)(elements)

@@ -24,7 +24,7 @@ class Movie(Model):
         related_name='place_movie'
     )
     
-    url = URLField(_("URL"), max_length=200)
+    image_url = URLField(_("Image URL"), max_length=200)
     
     name = CharField(_("Name"), max_length=140, blank=False, null=False)
     description = CharField(_("Description"), max_length=140, blank=False, null=False)
