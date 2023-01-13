@@ -1,10 +1,12 @@
-# Web-Scrapping Tool for Movie Theater Movie Listing
+# Web-Scrapping Tool
 
 The project focus on scrapping data from any website using a cluster of headful or headless browsers by using Docker containers running Celery, Redis, Selenium Grid, PostgreSQL and Django Rest Framework.
 
-As a starting point, this project focus on handling web scrapping on <https://www.ingresso.com/> for getting movie theatres and movie sessions.
+As a starting point, this project focused on handling web scrapping on <https://www.ingresso.com/> for getting movie theatres (DONE) and movie sessions (not reached yet).
 
-Easy to adapt on docker-compose file to handle more sessions and browser nodes using Chrome or other available selenium grid browsers. Also, this project can act as a framework for testing websites when configuring the right tasks and database models. As is, I'm looking forward to changing the project name and setup in future when it comes to being more generic as a web-scrapping tool.
+After that initial test and implementation phase, I'm expanding the natural modularity of the project to scrape Twitter's data as <https://twitter.com/search?q=.eth&src=typed_query&f=user>, focusing on extracting accounts with names ending with .eth, and for each Twitter account, recording their full name, username, their bio, followers count and following count.
+
+Easy to adapt on docker-compose file to handle more sessions and browser nodes using Chrome or other available selenium grid browsers. Also, this project can act as a framework for testing websites when configuring the right tasks and database models. As is, I'm also changing the project name and set up to become more generic as a web-scrapping tool.
 
 ## Getting Started
 
@@ -21,7 +23,7 @@ Easy to adapt on docker-compose file to handle more sessions and browser nodes u
 * Packages:
   * **Django**
   * **Django Rest Framework**
-  * More Details on [requirements.txt](movie_listing/requirements.txt)
+  * More Details on [requirements.txt](fancy_web_scrapping/requirements.txt)
 
 ## Installing
 

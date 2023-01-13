@@ -170,4 +170,4 @@ cython_debug/
 *.vsix
 
 # PROJECT
-/movie_listing/CONTAINER_ALREADY_STARTED_PLACEHOLDER
+/fancy_web_scrapping/CONTAINER_ALREADY_STARTED_PLACEHOLDER

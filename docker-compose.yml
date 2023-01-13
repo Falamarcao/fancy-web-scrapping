@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   django:
-    build: ./movie_listing
+    build: ./fancy_web_scrapping
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./movie_listing/:/usr/src/movie_listing/
+      - ./fancy_web_scrapping/:/usr/src/fancy_web_scrapping/
     ports:
       - 8000:8000
     environment:
@@ -17,18 +17,18 @@ services:
       - db
       - selenium-hub
   celery:
-    build: ./movie_listing
-    command: celery -A movie_listing worker --loglevel=info --concurrency 1 -E --uid=nobody --gid=nogroup
+    build: ./fancy_web_scrapping
+    command: celery -A fancy_web_scrapping worker --loglevel=info --concurrency 1 -E --uid=nobody --gid=nogroup
     volumes:
-      - ./movie_listing/:/usr/src/movie_listing/
+      - ./fancy_web_scrapping/:/usr/src/fancy_web_scrapping/
     env_file:
       - ./.env.dev
     depends_on:
       - django
       - redis
   dashboard:
-    build: ./movie_listing
-    command: celery flower -A movie_listing --port=5555 --broker=redis://redis:6379/0
+    build: ./fancy_web_scrapping
+    command: celery flower -A fancy_web_scrapping --port=5555 --broker=redis://redis:6379/0
     ports:
       - 5555:5555
     env_file:
@@ -76,9 +76,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=movie_listing
-      - POSTGRES_PASSWORD=movie_listing
-      - POSTGRES_DB=movie_listing_dev
+      - POSTGRES_USER=fancy_web_scrapping
+      - POSTGRES_PASSWORD=fancy_web_scrapping
+      - POSTGRES_DB=fancy_web_scrapping_dev
     expose:
       - 5432
 
