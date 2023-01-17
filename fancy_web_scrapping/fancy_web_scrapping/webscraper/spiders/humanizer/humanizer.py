@@ -3,19 +3,20 @@ from random import uniform, uniform
 
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.action_chains import ActionChains
 
 import numpy as np
 
 
 class Humanizer:
 
-    def __init__(self, driver: WebDriver):
+    def __init__(self, driver: WebDriver, actions: ActionChains):
         self.driver: WebDriver = driver
+        self.actions: ActionChains = actions
         self.sqrt3 = np.sqrt(3)
         self.sqrt5 = np.sqrt(5)
 
-    @staticmethod
-    def slow_typing(element: WebElement, text: str):
+    def slow_typing(self, text: str):
         """
         The slow typing function requires pageInput or the words that need to be typed,
         and the element in which they need to be sent through. Each letter of the string
@@ -29,8 +30,8 @@ class Humanizer:
             https://www.binarydefense.com/mimicking-human-activity-using-selenium-and-python/
         """
         for letter in text:
-            sleep(float(uniform(.05, .3)))
-            element.send_keys(letter)
+            self.actions.pause(float(uniform(1.175, 2)))
+            self.actions.send_keys(letter)
 
     @staticmethod
     def scroll_page(driver: WebDriver, elements: list[WebElement]):

@@ -24,8 +24,8 @@ def scrap_source(source):
 
     elif source['name'] == 'twitter':
         navigation_guide = TwitterDotCom()
-        navigation_guide = navigation_guide.search(search_term='.eth')
         # TODO: pass search_term through REST API parameters
+        navigation_guide.search(search_term='.eth')
         navigation_guide.go_to_people()
 
 

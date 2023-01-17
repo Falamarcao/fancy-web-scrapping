@@ -1,6 +1,6 @@
 import traceback
 from time import sleep
-from typing import Union, Callable
+from typing import Union, Callable, Any, Iterable
 from random import randrange
 
 from selenium.webdriver import Remote, ChromeOptions
@@ -44,8 +44,8 @@ class ChromeDriver:
         self.driver: WebDriver = Remote(
             command_executor='http://selenium-hub:4444/wd/hub',
             options=chrome_options)
-        self.human = Humanizer(driver=self.driver)
         self.actions: ActionChains = ActionChains(self.driver)
+        self.human = Humanizer(driver=self.driver, actions=self.actions)
         self.data: list[dict] = []
 
     @staticmethod
@@ -56,14 +56,14 @@ class ChromeDriver:
             print("\n\n", "-"*10, "\n", str(e), "\n",
                   traceback.format_exc(), "-"*10, "\n\n")
 
-    def __param_is_required(action: str, method: Callable, param: str):
-        if param != None and param != '':
-            method()
-        else:
-            raise Exception(f"Action {action} requires a parameter")
+    @staticmethod
+    def __is_required(action: str, params: list[Any]):
+        for param in params:
+            if not param:
+                raise Exception(f"Action {action} requires a parameter")
 
     @staticmethod
-    def batch(iterable):
+    def batch(iterable: Iterable):
         """
         Splits an iterable into multiple batches.    
         """
@@ -80,8 +80,8 @@ class ChromeDriver:
         try:
             # 1. Wait for element presence
             print(f"by {by} and path {path}", "\n\n")
-            WebDriverWait(self.driver, self.wait()).until(
-                EC.presence_of_element_located((by, path)))
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((by, path)))  # timeout 20 seconds
 
             # 2. Find element(s) by...
             if many:
@@ -91,6 +91,10 @@ class ChromeDriver:
             raise Exception(f"Element {path} was not found by {by}")
 
     def actions_chain(self, navigation_command: NavigationCommand, elements: Union[list[WebElement], WebElement]):
+        """
+        Schedules actions using Selenium's ActionChains and executes some custom actions.
+        """
+        
         for action in navigation_command.actions:
             if action == '':
                 continue
@@ -105,8 +109,11 @@ class ChromeDriver:
                 param = None
 
             # Logs
-            print(navigation_command.human_label,
-                  action, f"param: {param}", "\n")
+            if param:
+                print(navigation_command.human_label,
+                      action, f"param: {param}", "\n")
+            else:
+                print(navigation_command.human_label, action, "\n")
 
             if action == 'create_entry':
                 elements_length = len(elements)
@@ -128,6 +135,9 @@ class ChromeDriver:
 
                 # Create tasks in small batches
                 for items in self.batch(self.data):
+                    self.__is_required(action, [navigation_command.model_name,
+                                                navigation_command.model_kwargs])
+
                     current_app.send_task(
                         name='fancy_web_scrapping.webscraper.tasks.create_entry',
                         kwargs={'model_name': navigation_command.model_name,
@@ -138,11 +148,14 @@ class ChromeDriver:
                 self.data = []
 
             elif action == 'send_special_key':
-                self.__param_is_required(
-                    action=action,
-                    method=self.actions.sendKeys(getattr(Keys, param)),
-                    param=param
-                )
+                self.__is_required(action, params=[param])
+                self.actions.pause(self.wait())
+                self.actions.send_keys(getattr(Keys, param))
+                self.actions.pause(self.wait())
+
+            elif action == 'slow_typing':
+                self.__is_required(action, params=[param])
+                self.human.slow_typing(text=param)
 
             # elif action == 'move_to_element_with_offset':
             #     self.actions.move_by_offset(8, 0)
@@ -156,7 +169,7 @@ class ChromeDriver:
             #     self.actions.pause(self.wait())
 
             elif action == 'scroll_page':
-                Humanizer.scroll_page(elements)
+                self.human.scroll_page(elements)
 
             elif action == 'back':
                 self.driver.execute_script("window.history.go(-1)")
@@ -196,6 +209,9 @@ class ChromeDriver:
                             subcommand.by, subcommand.path, many=subcommand.many)
 
                         self.actions_chain(subcommand, element_s)
+                
+                # if navigation_command.next:
+                #     self.actions_chain(navigation_command.next, element_s)
 
         self.__on_error(_)
 
