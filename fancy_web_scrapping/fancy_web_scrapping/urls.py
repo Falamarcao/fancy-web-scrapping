@@ -13,24 +13,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from rest_framework.routers import DefaultRouter
 from django.views.generic import RedirectView
 from django.urls import path, include
 from django.contrib import admin
 
-from .users.urls import router as users_router
-from .sources.urls import router as sources_router
-from .places.urls import router as places_router
-from .movies.urls import router as movies_router
-from .webscraper.urls import router as webscraper_router
+from .routers import router
 
-
-router = DefaultRouter()
-router.registry.extend(users_router.registry)
-router.registry.extend(sources_router.registry)
-router.registry.extend(places_router.registry)
-router.registry.extend(movies_router.registry)
-router.registry.extend(webscraper_router.registry)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
