@@ -44,10 +44,10 @@ class IngressoDotCom(NavigationGuide):
                  'XPATH': r'//div[contains(@class, "card-theater-text")]//span'},
                 {'human_label': 'url',
                  'model_name': 'Place',
-                 'actions': ['create_entry', 'perform_create_entry'],
+                 'model_kwargs': {'update_conflicts': True, 'update_fields': ['updated_at'], 'unique_fields': ['name']},
+                 'actions': ['create_entry|href', 'perform_create_entry'],
                  'many': True,
-                 'XPATH': r'//div[contains(@class, "card-theater-text")]//a',
-                 'get_attribute': 'href'}
+                 'XPATH': r'//div[contains(@class, "card-theater-text")]//a'}
             ]
         })
 

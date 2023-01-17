@@ -1,6 +1,6 @@
 import traceback
 from time import sleep
-from typing import Union
+from typing import Union, Callable
 from random import randrange
 
 from selenium.webdriver import Remote, ChromeOptions
@@ -8,6 +8,7 @@ from selenium.webdriver import Remote, ChromeOptions
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
@@ -47,12 +48,19 @@ class ChromeDriver:
         self.actions: ActionChains = ActionChains(self.driver)
         self.data: list[dict] = []
 
-    def __on_error(self, method) -> None:
+    @staticmethod
+    def __on_error(method: Callable) -> None:
         try:
             method()
         except Exception as e:
             print("\n\n", "-"*10, "\n", str(e), "\n",
                   traceback.format_exc(), "-"*10, "\n\n")
+
+    def __param_is_required(action: str, method: Callable, param: str):
+        if param != None and param != '':
+            method()
+        else:
+            raise Exception(f"Action {action} requires a parameter")
 
     @staticmethod
     def batch(iterable):
@@ -87,15 +95,25 @@ class ChromeDriver:
             if action == '':
                 continue
 
-            print(navigation_command.human_label, action, "\n")
+            # Extracts action and paramter if available
+            _action = action.split('|')
+            action = _action[0]
+
+            try:
+                param = _action[1]
+            except:
+                param = None
+
+            # Logs
+            print(navigation_command.human_label,
+                  action, f"param: {param}", "\n")
 
             if action == 'create_entry':
                 elements_length = len(elements)
                 for idx, element in enumerate(elements):
 
-                    if navigation_command.get_attribute:
-                        value = element.get_attribute(
-                            navigation_command.get_attribute)
+                    if param:
+                        value = element.get_attribute(param)
                     else:
                         value = element.text
 
@@ -113,22 +131,29 @@ class ChromeDriver:
                     current_app.send_task(
                         name='fancy_web_scrapping.webscraper.tasks.create_entry',
                         kwargs={'model_name': navigation_command.model_name,
-                                'data': items}
+                                'data': items, **navigation_command.model_kwargs}
                     )
 
                 # Clean data in memory to allow other actions collect more data
                 self.data = []
 
-            elif action == 'move_to_element_with_offset':
-                self.actions.move_by_offset(8, 0)
-                self.actions.pause(self.wait())
+            elif action == 'send_special_key':
+                self.__param_is_required(
+                    action=action,
+                    method=self.actions.sendKeys(getattr(Keys, param)),
+                    param=param
+                )
 
-                offset = self.human.wind_mouse(8, 0, elements)
+            # elif action == 'move_to_element_with_offset':
+            #     self.actions.move_by_offset(8, 0)
+            #     self.actions.pause(self.wait())
 
-                self.actions.move_to_element_with_offset(
-                    elements, offset[0], offset[1])
-                # Schedule pause action of [t] seconds
-                self.actions.pause(self.wait())
+            #     offset = self.human.wind_mouse(8, 0, elements)
+
+            #     self.actions.move_to_element_with_offset(
+            #         elements, offset[0], offset[1])
+            #     # Schedule pause action of [t] seconds
+            #     self.actions.pause(self.wait())
 
             elif action == 'scroll_page':
                 Humanizer.scroll_page(elements)
