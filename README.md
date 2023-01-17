@@ -29,6 +29,8 @@ Easy to adapt on docker-compose file to handle more sessions and browser nodes u
 
 > Do you have [Docker Installed](https://www.docker.com/)?
 
+For every command you can check the makefile or follow the instructions below:
+
 ## Building and Running Development environment (DEV)
 
 * ### BUILD

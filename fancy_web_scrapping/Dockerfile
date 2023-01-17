@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.9.6-alpine
+FROM python:3.10-alpine
 
 # set work directory
 WORKDIR /usr/src/fancy_web_scrapping
@@ -10,6 +10,9 @@ ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
 RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
+
+# install numpy dependencies
+RUN apk add make cmake g++ gfortran
 
 # Postgree CLient (only dev environment)
 RUN apk add postgresql-client

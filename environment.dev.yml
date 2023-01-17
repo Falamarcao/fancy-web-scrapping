@@ -1,0 +1,8 @@
+# run via: conda env create --file enviroment.dev.conda.yml
+---
+dependencies:
+  - python==3.10
+  - pip
+  - autopep8
+  - pip:
+      - -r ./fancy_web_scrapping/requirements.txt

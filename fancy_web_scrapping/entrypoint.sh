@@ -24,7 +24,7 @@ if [ "$SERVICE_NAME" = "django" ]; then
   python manage.py loaddata sources.json
 
   # RUN TESTS EVERYTIME
-  # python manage.py test fancy_web_scrapping.sources fancy_web_scrapping.movies &> test.log
+  python manage.py test fancy_web_scrapping.webscraper.spiders.navigator &>test.log
 
   # CREATE SUPER USER
   echo "Creating Super User..."

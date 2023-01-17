@@ -3,7 +3,7 @@
 ###########
 
 # pull official base image
-FROM python:3.9.6-alpine as builder
+FROM python:3.10-alpine as builder
 
 # set work directory
 WORKDIR /usr/src/fancy_web_scrapping
@@ -14,6 +14,9 @@ ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
 RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
+
+# install numpy dependencies
+RUN apk add make cmake g++ gfortran
 
 # lint
 RUN pip install --upgrade pip
@@ -30,7 +33,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/fancy_web_scrapping/
 #########
 
 # pull official base image
-FROM python:3.9.6-alpine
+FROM python:3.10-alpine
 
 # create directory for the fancy_web_scrapping user
 RUN mkdir -p /home/fancy_web_scrapping
