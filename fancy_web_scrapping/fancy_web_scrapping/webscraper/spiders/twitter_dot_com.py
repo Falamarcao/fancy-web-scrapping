@@ -3,7 +3,7 @@ from .navigator.navigation_guide import NavigationGuide
 
 class TwitterDotCom(NavigationGuide):
 
-    def login(self): # TODO: Implement login to sometimes mimic more a user behavior, by login in diferent forms
+    def login(self):  # TODO: Implement login to sometimes mimic more a user behavior, by login in diferent forms
         """
         Randomized paths to login: Bottom banner, right side buttons, ....
         """
@@ -13,11 +13,11 @@ class TwitterDotCom(NavigationGuide):
         # Click on input field
         self.append({
             'human_label': 'input_search_terms',
-            'actions': ['move_to_element', 'click',],
+            'actions': ['move_to_element', 'click', ],
             'many': False,
             'XPATH': r'//form[@role="search"]/div[1]/div/div/div/label/div[2]/div/input'
         })
-        
+
         # Click on input field, slow type [input] value, and send ENTER key.
         self.append({
             'human_label': 'input_search_terms',
@@ -33,16 +33,47 @@ class TwitterDotCom(NavigationGuide):
             'human_label': 'button_People',
             'actions': ['move_to_element', 'click', 'perform_actions'],
             'many': False,
-            'XPATH': r'//div[@data-testid="ScrollSnap-List"]/div[2]'
+            'XPATH': r'//div[@data-testid="ScrollSnap-List"]/div[3]'
         })
 
+    def get_basic_data(self):
+
+        self.append({
+            'human_label': 'user',
+            'actions': ['move_to_element', 'perform_actions'],
+            'many': False,
+            'popup': True,
+            'XPATH': r'//div[@data-testid="UserCell"]',
+        })
+
+        self.append({
+            'human_label': 'Profile',
+            # 'actions': ['move_to_element', 'perform_actions'],
+            # 'next': 'scroll_page',
+            # 'many': True,
+            # 'XPATH': r'//div[@data-testid="UserCell"]',
+            'subcommands': [
+                {'human_label': 'screen_name',  # TODO: be sure that it's ending on .eth
+                 'actions': ['scrap_data'],
+                 'many': True,
+                 'XPATH': r'//div[@data-testid="UserCell"]/div/div[2]/div[1]/div[1]/div/div[1]/a/div/div[1]/span/span'},
+
+                {'human_label': 'username',
+                 'actions': ['scrap_data', 'debug_print_data', 'clean_data', 'perform_actions'],
+                 'many': True,
+                 'XPATH': r'//div[@data-testid="UserCell"]/div/div[2]/div[1]/div[1]/div/div[2]/div/a/div/div/span'},
+            ]
+        })
+
+    # Not working
+    def get_profile_data(self):
         # Get User's data from HoverCard
         self.append({
             'human_label': 'hover_UserAvatar',
             # Show modal on hover
             'actions': ['move_to_element', 'perform_actions'],
             # TODO 2: implement next action - on each element apply scroll_page
-            'next': {'actions': ['scroll_page']},
+            'next': 'scroll_page',
             'many': True,
             'XPATH': r'//img[contains(@src,"https://pbs.twimg.com/profile_images/")]',
             'subcommands': [
@@ -62,7 +93,6 @@ class TwitterDotCom(NavigationGuide):
                  'many': False,
                  'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[2]/div/div/div/a/div/div/span'},
 
-                # TODO: do a transform function to extract text and links from bio, because bio is a html rich field
                 {'human_label': 'bio',
                  'actions': ['scrap_data'],
                  'many': False,
@@ -74,8 +104,7 @@ class TwitterDotCom(NavigationGuide):
                  'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[4]/div/div[1]/a/span[1]/span'},
 
                 {'human_label': 'followers_count',
-                 # , 'perform_create_entry'],
-                 'actions': ['scrap_data', 'debug_print_data'],
+                 'actions': ['scrap_data', 'perform_actions', 'debug_print_data'],
                  'many': False,
                  'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[4]/div/div[2]/a/span[1]/span'},
             ]

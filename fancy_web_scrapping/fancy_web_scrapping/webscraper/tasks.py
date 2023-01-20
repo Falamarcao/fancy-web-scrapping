@@ -20,13 +20,15 @@ def scrap_source(source):
         navigation_guide = IngressoDotCom()
         navigation_guide.go_to_theaters_list()
         navigation_guide.get_and_record_movie_theaters()
-        # navigation_guide.get_movies()
+        # navigation_guide.get_movies() # not working
 
     elif source['name'] == 'twitter':
         navigation_guide = TwitterDotCom()
         # TODO: pass search_term through REST API parameters
         navigation_guide.search(search_term='.eth')
         navigation_guide.go_to_people()
+        navigation_guide.get_basic_data()
+        # navigation_guide.get_profile_data()  # not working
 
 
     # EXECUTE INSTRUCTIONS

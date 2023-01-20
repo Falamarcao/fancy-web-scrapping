@@ -1,5 +1,7 @@
 # Web-Scrapping Tool
 
+VIDEO: <https://loom.com/share/f2733285d0fe49ecad06a923072a30ef>
+
 The project focus on scrapping data from any website using a cluster of headful or headless browsers by using Docker containers running Celery, Redis, Selenium Grid, PostgreSQL and Django Rest Framework.
 
 As a starting point, this project focused on handling web scrapping on <https://www.ingresso.com/> for getting movie theatres (DONE) and movie sessions (not reached yet).

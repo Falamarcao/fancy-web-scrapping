@@ -3,6 +3,7 @@ from typing import Union, Iterable, Callable
 from random import randrange, uniform
 
 from selenium.webdriver.remote.webelement import WebElement
+
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
@@ -11,11 +12,11 @@ from celery import current_app
 class OurActionChains:
     def __init__(self, driver, duration = 500):        
         self.__dir_ActionChains = list(filter(lambda x: x[0] != "_",dir(ActionChains)))
-        
-        self.action_chains: ActionChains = ActionChains(driver, duration)
+        self.driver = driver
+        self.action_chains: ActionChains = ActionChains(self.driver, duration)
         self._actions: list[Union[ActionChains, Callable]] = []
-        self.NOT_ACTION_CHAINS = ('scrap_data', 'create_entry',
-                               'perform_actions', 'debug_print_data')
+        self.NOT_ACTION_CHAINS = ('scroll_page', 'scrap_data', 'create_entry',
+                                  'perform_actions', 'debug_print_data')
         self.data: list[dict] = []
     
     @staticmethod
@@ -73,14 +74,11 @@ class OurActionChains:
         Add action to the queue (self._actions).
         """
         if action in self.NOT_ACTION_CHAINS:
-            print("NOT ACTION CHAINS")
             self.__set_queue()
             # Append Custom Command
             self.by_name(action, *args, **kwargs)
         else:
-            print("ACTION CHAINS")
             self.by_name(action, *args, **kwargs)
-            self.action_chains.pause(self.wait())
     
     def send_special_key(self, param: str):
         self.__is_required('send_special_key', params=[param])
@@ -151,38 +149,36 @@ class OurActionChains:
     
         # return self
     
-    def scroll_page(self, on_elements: list[WebElement]):
-        def scroll_page_inner():
-            for _ in on_elements:
-                self.driver.execute_script(
-                    "arguments[0].scrollIntoView({ behavior: 'smooth', block: 'center'});")
+    def scroll_page(self, on_element_s: Union[list[WebElement], WebElement] = None, scrollTo_zero: bool = True):
+        if scrollTo_zero:
+            def scroll_page_inner():
+                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 sleep(0.3)
-        
+        else:
+            def scroll_page_inner():
+                for element in on_element_s:
+                    self.driver.execute_script(
+                        "arguments[0].scrollIntoView({ behavior: 'smooth', block: 'center'});", element)
+                    sleep(0.3)
         
         self._actions.append(scroll_page_inner)
         
         return self
     
-    # def back(self):
-    #     self._driver.execute_script("window.history.go(-1)")
-        
-    #     return self
-    
-    def scrap_data(self, elements: Union[list[WebElement], WebElement], label: str, param: str, many: bool = False):
+    def scrap_data(self, elements: Union[list[WebElement], WebElement], label: str, param: str, many: bool = False, **kwargs):
         def scrap_data_inner():
             if many:
-                    elements_length = len(elements)
-                    for idx, element in enumerate(elements):
+                elements_length = len(elements)
+                for idx, element in enumerate(elements):
+                    if param:
+                        value = element.get_attribute(param)
+                    else:
+                        value = element.text
 
-                        if param:
-                            value = element.get_attribute(param)
-                        else:
-                            value = element.text
-
-                        if len(self.data) < elements_length:
-                            self.data.append({label: value})
-                        else:
-                            self.data[idx].update({label: value})
+                    if len(self.data) < elements_length:
+                        self.data.append({label: value})
+                    else:
+                        self.data[idx].update({label: value})
 
             else:
                 if param:
@@ -190,7 +186,15 @@ class OurActionChains:
                 else:
                     value = elements.text
 
-                self.data.append({label: value})
+                parent_index = kwargs.get('parent_index')
+
+                if parent_index != None:  # 0 is False, so need to check for None.
+                    try:
+                        self.data[parent_index].update({label: value})
+                    except:
+                        self.data.append({label: value})
+                else:
+                    self.data.append({label: value})
 
 
         self._actions.append(scrap_data_inner)
@@ -199,6 +203,11 @@ class OurActionChains:
     
     def debug_print_data(self):
         self._actions.append(lambda: print(self.data))
+        
+        return self
+    
+    def clean_data(self, *args, **kwargs):
+        self.data = []
         
         return self
 
@@ -225,10 +234,8 @@ class OurActionChains:
     def perform_actions(self):
         for action in self._actions:
             if isinstance(action, ActionChains):
-                print("perform_actions - ACTION CHAINS")
                 action.perform()
             else:
-                print("perform_actions - NOT ACTION CHAINS")
                 action()
         
         # self._actions only will be populated,

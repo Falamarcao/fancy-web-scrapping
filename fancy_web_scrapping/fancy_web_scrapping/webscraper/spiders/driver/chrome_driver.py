@@ -37,6 +37,7 @@ class ChromeDriver:
         self.driver: WebDriver = Remote(
             command_executor='http://selenium-hub:4444/wd/hub',
             options=chrome_options)
+        self.webdriver_wait = WebDriverWait(self.driver, 20)
         self.action_chains: OurActionChains = OurActionChains(self.driver)
 
     @staticmethod
@@ -51,7 +52,7 @@ class ChromeDriver:
         try:
             # 1. Wait for element presence
             print(f"by {by} and path {path}", "\n\n")
-            WebDriverWait(self.driver, 20).until(
+            self.webdriver_wait.until(
                 EC.presence_of_element_located((by, path)))  # timeout 20 seconds
 
             # 2. Find element(s) by...
@@ -62,79 +63,82 @@ class ChromeDriver:
             if not popup:
                 raise Exception(f"Element {path} was not found by {by}")
 
-    def schedule_actions(self, navigation_command: NavigationCommand, elements: Union[list[WebElement], WebElement]):
+    def schedule_actions(self, navigation_command: NavigationCommand, elements: Union[list[WebElement], WebElement], **kwargs):
         """
         Schedules actions using Selenium's ActionChains and executes some custom actions.
         """
 
-        for action in navigation_command.actions:
-            if action == '':
-                continue
+        if navigation_command.actions:
+            for action in navigation_command.actions:
+                if action == '':
+                    continue
 
-            # Extracts action and paramter if available
-            _action = action.split('|')
-            action = _action[0]
+                # Extracts action and paramter if available
+                _action = action.split('|')
+                action = _action[0]
 
-            try:
-                param = _action[1]
-            except:
-                param = None
+                try:
+                    param = _action[1]
+                except:
+                    param = None
 
-            # Logs
-            if param:
-                print(navigation_command.human_label,
-                      action, f"param: {param}", "\n")
-            else:
-                print(navigation_command.human_label, action, "\n")
+                # Logs
+                if param:
+                    print(navigation_command.human_label,
+                          action, f"param: {param}", "\n")
+                else:
+                    print(navigation_command.human_label, action, "\n")
 
-            # Schedules actions
+                # Schedules actions
+                if action == 'scrap_data':
+                    self.action_chains.add_action(
+                        action,
+                        elements=elements,
+                        label=navigation_command.human_label,
+                        param=param,
+                        many=navigation_command.many,
+                        **kwargs.get('kwargs_scrap_data', {})
+                    )
 
-            if action == 'scrap_data':
-                self.action_chains.add_action(
-                    action,
-                    elements=elements,
-                    label=navigation_command.human_label,
-                    param=param,
-                    many=navigation_command.many
-                )
+                elif action == 'create_entry':
+                    self.action_chains.add_action(
+                        action,
+                        model_name=navigation_command.model_name,
+                        **navigation_command.model_kwargs
+                    )
 
-            elif action == 'create_entry':
-                self.action_chains.add_action(
-                    action,
-                    model_name=navigation_command.model_name,
-                    **navigation_command.model_kwargs
-                )
+                elif action == 'send_special_key':
+                    self.action_chains.add_action(action, param=param)
 
-            elif action == 'send_special_key':
-                self.action_chains.add_action(action, param=param)
+                elif action == 'slow_typing':
+                    self.action_chains.add_action(action, text=param)
 
-            elif action == 'slow_typing':
-                self.action_chains.add_action(action, text=param)
+                elif action == 'scroll_page':
+                    self.action_chains.add_action(
+                        action, on_element_s=elements)
 
-            elif action == 'scroll_page':
-                self.action_chains.add_action(action, on_elements=elements)
+                elif action == 'perform_actions':
+                    self.action_chains.perform_actions()
 
-            elif action == 'perform_actions':
-                self.action_chains.perform_actions()
+                elif action == 'debug_print_data':
+                    self.action_chains.add_action(action)
 
-            elif action == 'debug_print_data':
-                self.action_chains.add_action(action)
+                else:
+                    self.action_chains.add_action(action, elements)
 
-            else:
-                self.action_chains.add_action(action, elements)
-
-    def exec(self, navigation_command: NavigationCommand):
+    def exec(self, navigation_command: NavigationCommand, **kwargs):
         element_or_elements = self.find_element_by(navigation_command.by,
                                                    navigation_command.path,
                                                    many=navigation_command.many,
                                                    popup=navigation_command.popup)
 
-        self.schedule_actions(navigation_command, element_or_elements)
+        self.schedule_actions(navigation_command,
+                              element_or_elements, **kwargs)
 
-    def exec_sub(self, navigation_command: NavigationCommand):
+    def exec_sub(self, navigation_command: NavigationCommand, **kwargs):
         for subcommand in navigation_command.subcommands:
             print("NAVIGATION SUBCOMMAND")
-            self.exec(subcommand)
+            self.exec(subcommand, **kwargs)
 
     def with_many(self, navigation_command: NavigationCommand):
         """
@@ -145,13 +149,13 @@ class ChromeDriver:
                                         navigation_command.path,
                                         many=navigation_command.many,
                                         popup=navigation_command.popup)
+        
+        print("with_many", f"path: {navigation_command.path}", [e.get_attribute('href') for e in elements])
 
-        for element in elements:
-            # Schedule actions for each element
-            self.schedule_actions(navigation_command, element)
-
+        for idx, element in enumerate(elements):
             # Execute/Schedule all the subcommands for each element
-            self.exec_sub(navigation_command=navigation_command)
+            self.exec_sub(navigation_command=navigation_command,
+                          **{'kwargs_scrap_data': {'parent_index': idx}})
 
     def define_path(self, navigation_command: NavigationCommand):
         """
@@ -162,8 +166,9 @@ class ChromeDriver:
         print("NAVIGATION COMMAND")
 
         if navigation_command.many and navigation_command.subcommands:
+            # for _ in range(0, 5):
             self.with_many(navigation_command)
-
+                # self.action_chains.add_action(navigation_command.next)
         else:
             if navigation_command.path:
                 self.exec(navigation_command)
