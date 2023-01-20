@@ -37,43 +37,46 @@ class TwitterDotCom(NavigationGuide):
         })
 
         # Get User's data from HoverCard
-        # self.append({
-        #     'human_label': 'hover_UserAvatar',
-        #     'actions': ['move_to_element'], # Show modal on hover
-        #     'next': {'actions': ['scroll_page']}, # TODO 2: implement next action - on each element apply scroll_page
-        #     'many': True,
-        #     'XPATH': r'//img[contains(@src,"https://pbs.twimg.com/profile_images/")]',
-        #     'subcommands': [
-        #         # User HoverCard
-        #         {'human_label': 'HoverCard',
-        #          'actions': [''], # Just wait for presence
-        #          'many': False,
-        #          'XPATH': r'//div[@data-testid="HoverCard"]'},
+        self.append({
+            'human_label': 'hover_UserAvatar',
+            # Show modal on hover
+            'actions': ['move_to_element', 'perform_actions'],
+            # TODO 2: implement next action - on each element apply scroll_page
+            'next': {'actions': ['scroll_page']},
+            'many': True,
+            'XPATH': r'//img[contains(@src,"https://pbs.twimg.com/profile_images/")]',
+            'subcommands': [
+                # User HoverCard
+                {'human_label': 'HoverCard',
+                 'actions': [''],  # Just wait for presence
+                 'many': False,
+                 'XPATH': r'//div[@data-testid="HoverCard"]'},
 
-        #         {'human_label': 'screen_name',  # TODO: be sure that it's ending on .eth
-        #          'actions': ['create_entry'],
-        #          'many': False,
-        #          'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[2]/div/div/a/div/div[1]/span/span'},
+                {'human_label': 'screen_name',  # TODO: be sure that it's ending on .eth
+                 'actions': ['scrap_data'],
+                 'many': False,
+                 'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[2]/div/div/a/div/div[1]/span/span'},
 
-        #         {'human_label': 'username',
-        #          'actions': ['create_entry'],
-        #          'many': False,
-        #          'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[2]/div/div/div/a/div/div/span'},
+                {'human_label': 'username',
+                 'actions': ['scrap_data'],
+                 'many': False,
+                 'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[2]/div/div/div/a/div/div/span'},
 
-        #          # TODO: do a transform function to extract text and links from bio, because bio is a html rich field
-        #         {'human_label': 'bio',
-        #          'actions': ['create_entry'],
-        #          'many': False,
-        #          'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[3]/div'},
+                # TODO: do a transform function to extract text and links from bio, because bio is a html rich field
+                {'human_label': 'bio',
+                 'actions': ['scrap_data'],
+                 'many': False,
+                 'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[3]/div'},
 
-        #         {'human_label': 'following_count',
-        #          'actions': ['create_entry'],
-        #          'many': False,
-        #          'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[4]/div/div[1]/a/span[1]/span'},
+                {'human_label': 'following_count',
+                 'actions': ['scrap_data'],
+                 'many': False,
+                 'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[4]/div/div[1]/a/span[1]/span'},
 
-        #         {'human_label': 'followers_count',
-        #          'actions': ['create_entry', 'debug_print_data'],#, 'perform_create_entry'],
-        #          'many': False,
-        #          'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[4]/div/div[2]/a/span[1]/span'},
-        #     ]
-        # })
+                {'human_label': 'followers_count',
+                 # , 'perform_create_entry'],
+                 'actions': ['scrap_data', 'debug_print_data'],
+                 'many': False,
+                 'XPATH': r'//div[@data-testid="HoverCard"]/div/div/div[4]/div/div[2]/a/span[1]/span'},
+            ]
+        })

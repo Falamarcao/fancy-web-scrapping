@@ -5,7 +5,7 @@ from celery import shared_task
 
 from .spiders.ingresso_dot_com import IngressoDotCom
 from .spiders.twitter_dot_com import TwitterDotCom
-from .spiders.chrome_driver import ChromeDriver
+from .spiders.driver.chrome_driver import ChromeDriver
 
 # logger = get_task_logger(__name__)
 
@@ -41,7 +41,7 @@ def scrap_source(source):
 
 
 @shared_task
-def create_entry(model_name: str, data: list[dict]):
+def create_entry(model_name: str, data: list[dict], **kwargs):
     module = None
 
     # import the Model class
@@ -53,4 +53,4 @@ def create_entry(model_name: str, data: list[dict]):
     # Insert value
     if module:
         model = getattr(module, model_name)
-        model.objects.bulk_create([model(**entry) for entry in data])
+        model.objects.bulk_create([model(**entry) for entry in data], **kwargs)

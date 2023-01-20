@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 
 class NavigationCommand:
     def __init__(self, **kwargs):
-        for key in ('human_label', 'actions', 'many', 'subcommands', 'model_name', 'model_kwargs', 'CLASS_NAME', 'CSS_SELECTOR', 'ID',
+        for key in ('human_label', 'actions', 'many', 'popup', 'subcommands', 'model_name', 'model_kwargs', 'CLASS_NAME', 'CSS_SELECTOR', 'ID',
                     'LINK_TEXT', 'NAME', 'PARTIAL_LINK_TEXT', 'TAG_NAME', 'XPATH'):
             if key in kwargs:
                 if key == 'subcommands':

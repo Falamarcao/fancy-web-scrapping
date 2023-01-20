@@ -7,9 +7,17 @@ class IngressoDotCom(NavigationGuide):
         # Close cookies popup window
         self.append({
             'human_label': 'button_cookies_OK',
-            'actions': ['move_to_element', 'click',],
+            'actions': ['move_to_element', 'click', 'perform_actions'],
             'many': False,
             'XPATH': r'//*[@id="c-p-bn"]'
+        })
+
+        self.append({
+            'human_label': 'button_close_ads',
+            'actions': ['move_to_element', 'click', 'perform_actions'],
+            'many': False,
+            'popup': True,
+            'XPATH': r'//a[@class="midia-presite-header-link-fechar-publicidade"]'
         })
 
         # Move to menu item and click
@@ -27,6 +35,14 @@ class IngressoDotCom(NavigationGuide):
             'XPATH': r'//*[@id="header"]/div[2]/div/div/div/nav/ul/li[2]/a'
         })
 
+        self.append({
+            'human_label': 'button_close_ads',
+            'actions': ['move_to_element', 'click', 'perform_actions'],
+            'many': False,
+            'popup': True,
+            'XPATH': r'//a[@class="midia-presite-header-link-fechar-publicidade"]'
+        })
+
     def get_and_record_movie_theaters(self):
         # GET PLACES
         self.append({
@@ -34,18 +50,18 @@ class IngressoDotCom(NavigationGuide):
             'subcommands': [
                 {'human_label': 'name',
                  'model_name': 'Place',
-                 'actions': ['create_entry'],
+                 'actions': ['scrap_data'],
                  'many': True,
                  'XPATH': r'//div[contains(@class, "card-theater-text")]//strong'},
                 {'human_label': 'address',
                  'model_name': 'Place',
-                 'actions': ['create_entry'],
+                 'actions': ['scrap_data'],
                  'many': True,
                  'XPATH': r'//div[contains(@class, "card-theater-text")]//span'},
                 {'human_label': 'url',
                  'model_name': 'Place',
                  'model_kwargs': {'update_conflicts': True, 'update_fields': ['updated_at'], 'unique_fields': ['name']},
-                 'actions': ['create_entry|href', 'perform_create_entry'],
+                 'actions': ['scrap_data|href', 'debug_print_data', 'create_entry', 'perform_actions'],
                  'many': True,
                  'XPATH': r'//div[contains(@class, "card-theater-text")]//a'}
             ]
