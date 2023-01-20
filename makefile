@@ -10,7 +10,7 @@ up-dev: # [build-dev] must be executed before
 	docker-compose up -d
 
 run-dev:
-	make build-dev && make up-dev && open-tabs-dev
+	make build-dev && make up-dev && make open-tabs-dev
 
 test-dev: # [up-dev or run-dev] must be executed before.
 	docker-compose exec django python manage.py test fancy_web_scrapping.webscraper.spiders.navigator
@@ -26,7 +26,7 @@ open-tabs-dev: # (optional) runs on the browser Django, Celery Flower, and Selen
 # PRODUCTION-LIKE ENVIRONMENT
 
 run-prod:
-	docker-compose -f docker-compose.prod.yml up -d --build && open-tabs-prod
+	docker-compose -f docker-compose.prod.yml up -d --build && make open-tabs-prod
 
 stop-prod:
 	docker-compose -f docker-compose.prod.yml down -v
